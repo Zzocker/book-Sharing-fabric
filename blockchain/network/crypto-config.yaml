@@ -1,0 +1,12 @@
+OrdererOrgs:
+    - Name: Orderer
+      Domain: orderer.com
+      Specs:
+        - Hostname: orderer
+          CommonName: "{{.Hostname}}"
+PeerOrgs:
+    - Name: Host
+      Domain: host.com
+      Specs:
+        - Hostname: devpeer
+          CommonName: "{{.Hostname}}"

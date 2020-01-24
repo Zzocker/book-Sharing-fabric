@@ -1,0 +1,45 @@
+ 
+Organizations:
+    - &OrdererOrg
+        Name: Orderer
+        ID: OrdererMSP
+        MSPDir: ./crypto-config/ordererOrganizations/orderer.com/msp
+    - &Host
+        Name: Host
+        ID: HostMSP
+        MSPDir: ./crypto-config/peerOrganizations/host.com/msp
+        AnchorPeers:
+            - Host: devpeer
+              Port: 7051
+Application: &ApplicationDefaults
+    Organizations:
+Orderer: &OrdererDefaults
+        OrdererType: solo
+        Addresses:
+            - orderer:7050
+        BatchTimeout: 0.0001s
+        BatchSize:
+            MaxMessageCount: 10
+            AbsoluteMaxBytes: 99 MB
+            PreferredMaxBytes: 512 KB
+        Organizations:
+Profiles:
+    Genesis:
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *OrdererOrg
+        Consortiums:
+            BookShare:
+                Organizations:
+                    - *Host
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+    BookChannel:
+        Consortium: BookShare
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Host
