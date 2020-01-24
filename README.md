@@ -8,7 +8,7 @@ In this project,we are trying to build a decentralized platform for students to 
 ## Features
 1. owner of book can track his/her book in realtime.
 2. Books will be secured using the fabric network.
-3. The owner can remove his/ger book from the platform.
+3. The owner can remove his/her book from the platform.
 
 ## Language and Technology in use
 1. Golang
