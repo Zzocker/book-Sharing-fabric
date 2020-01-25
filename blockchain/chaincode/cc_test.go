@@ -5,9 +5,10 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 	"testing"
 )
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsIiwiZXhwIjoxNTc5OTIyMzgyfQ.vPyN9WZZA0bXlNi6z_TGZ__aN0C06rhQunljDfE-78w"
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsIiwiZXhwIjoxNTc5OTYxNTAyfQ.Z0zr_8StAn_fVd01rk8ZvszpNKF9ETHaocx0GRNCQk0"
 func TestRegister(t *testing.T){
 	stub := initChaincode(t)
+	// rregister
 	response := stub.MockInvoke("invoke",SetupArgsArray("registerUser","email","Pritam Singh","A-226","911","pw"))
 	t.Log(string(response.Payload))
 	// login

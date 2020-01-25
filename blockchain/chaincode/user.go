@@ -36,7 +36,6 @@ func userGateway(stub shim.ChaincodeStubInterface, args []string) peer.Response 
 			}
 			UByte,_= json.Marshal(user)
 			stub.PutState(key,UByte)
-			return shim.Success(UByte)
 		}
 		/*2*/
 		if newargs[0]=="changeCover"{
@@ -54,7 +53,8 @@ func userGateway(stub shim.ChaincodeStubInterface, args []string) peer.Response 
 			}
 			UByte,_= json.Marshal(user)
 			stub.PutState(key,UByte)
-			return shim.Success(UByte)
+			// return shim.Success(UByte)
+			return shim.Success(nil)
 		}
 		/*4*/
 		if newargs[0]=="requestBook"{
@@ -80,7 +80,8 @@ func userGateway(stub shim.ChaincodeStubInterface, args []string) peer.Response 
 			}
 			UByte,_= json.Marshal(user)
 			stub.PutState(key,UByte)
-			return shim.Success(UByte)
+			// return shim.Success(UByte)
+			return shim.Success(nil)
 		}
 		/*7*/
 		if newargs[0]=="getRequest"{
@@ -388,6 +389,6 @@ func registerUser(stub shim.ChaincodeStubInterface, args []string) peer.Response
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	// return shim.Success(nil)
-	return shim.Success(uByte) // for testing
+	return shim.Success(nil)
+	// return shim.Success(uByte) // for testing
 }
