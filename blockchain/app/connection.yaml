@@ -1,0 +1,32 @@
+name: "Book-network"
+version: "1.0"
+client:
+    organization: Host
+organizations:
+    Host:
+        mspid: HostMSP
+        peers:
+            - devpeer
+        certificateAuthorities:
+            - ca
+orderers:
+    orderer:
+        url: grpc://localhost:7050
+peers:
+    devpeer:
+        url: grpc://localhost:7051
+certificateAuthorities:
+    ca:
+        caName: ca
+        url: http://localhost:7054
+        
+channels:
+    bookchannel:
+        orderers:
+            - orderer
+        peers:
+            devpeer:
+                endorsingPeer: true
+                chaincodeQuery: true
+                ledgerQuery: true
+                eventSource: true

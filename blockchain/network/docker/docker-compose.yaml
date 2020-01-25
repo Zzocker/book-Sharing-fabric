@@ -53,6 +53,8 @@ services:
             - data-orderer:/var/hyperledger/production/orderer
             - ../channel-artifacts:/channel-artifacts
             - ../crypto-config/ordererOrganizations/orderer.com/orderers/orderer:/orderer
+        ports: 
+            - 7050:7050
     ca:
         container_name: ca
         extends: 
@@ -88,6 +90,6 @@ services:
             - ../crypto-config:/crypto-config
             - ../channel-artifacts:/channel-artifacts
             - /var/run/:/host/var/run/
-            - ../chaincode:/opt/gopath/src/chaincode
+            - ../../chaincode:/opt/gopath/src/chaincode
         networks: 
             - bookshare
