@@ -1,7 +1,7 @@
 const fs = require('fs')
 const yaml = require('js-yaml')
 const {FileSystemWallet,Gateway} = require('fabric-network')
-const CONNECTION_PROFILE_PATH= "../client/connection.yaml"
+const CONNECTION_PROFILE_PATH= "../connection.yaml"
 const WALLET_PATH="../client/wallet"
 const IDENTITY_NAME = "AppClient"
 const CHANNEL_NAME = "bookchannel"

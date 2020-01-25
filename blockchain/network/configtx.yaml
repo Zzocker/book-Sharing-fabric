@@ -17,7 +17,7 @@ Orderer: &OrdererDefaults
         OrdererType: solo
         Addresses:
             - orderer:7050
-        BatchTimeout: 0.0001s
+        BatchTimeout: 2s
         BatchSize:
             MaxMessageCount: 10
             AbsoluteMaxBytes: 99 MB
