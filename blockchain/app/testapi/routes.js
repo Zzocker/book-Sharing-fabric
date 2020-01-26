@@ -6,13 +6,13 @@ routes.post('/register',async (req,res)=>{
     try {
         rbody = req.body
         const contract = await network.contract()
-        await contract.submitTransaction("registerUser",rbody.email,rbody.name,rbody.room_no,rbody.phone_no)
+       const response = await contract.submitTransaction("registerUser",rbody.email,rbody.name,rbody.room_no,rbody.phone_no)
         res.status(200).json({
             msg:"User successfully registered"
         })
     } catch (error) {
         res.status(500).json({
-            msg:"Error in registering"
+            msg: error.message
         })
     }
 })
