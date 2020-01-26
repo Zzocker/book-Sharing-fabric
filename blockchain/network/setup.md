@@ -14,3 +14,4 @@ now enroll the admin then register the client
 
 peer chaincode install -n book -v 0 -p chaincode
 peer chaincode instantiate -n book -v 0 -C bookchannel -c '{"args":["init"]}'
+peer chaincode upgrade -n book -v 1 -C bookchannel -c '{"args":["init"]}'
