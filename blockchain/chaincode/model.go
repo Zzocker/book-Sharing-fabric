@@ -23,8 +23,8 @@ type Book struct {
 }
 
 type Request struct {
-	ID string `json:"id"`
 	ISBN string `json:"isbn"`
+	ToEmail string `json:"to_email"`
 	FromEmail string `json:"from_email"`
 	Status string `json:"status"` 
 	/*

@@ -38,3 +38,21 @@ func getUser(stub shim.ChaincodeStubInterface, key string) (User, error) {
 	json.Unmarshal(RByte, &user)
 	return user, nil
 }
+func getBook(stub shim.ChaincodeStubInterface, key string) (Book, error) {
+	BByte, err := getStateByte(stub, key)
+	if err != nil {
+		return Book{}, err
+	}
+	var book Book
+	json.Unmarshal(BByte, &book)
+	return book, nil
+}
+func getRequest(stub shim.ChaincodeStubInterface, key string) (Request, error) {
+	RByte, err := getStateByte(stub, key)
+	if err != nil {
+		return Request{}, err
+	}
+	var request Request
+	json.Unmarshal(RByte, &request)
+	return request, nil
+}

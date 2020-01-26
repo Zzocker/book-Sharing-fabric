@@ -13,5 +13,7 @@ peer channel update -f HostAnchorUPdate.tx -o orderer:7050 -c bookchannel
 now enroll the admin then register the client
 
 peer chaincode install -n book -v 0 -p chaincode
-peer chaincode instantiate -n book -v 0 -C bookchannel -c '{"args":["init"]}'
-peer chaincode upgrade -n book -v 1 -C bookchannel -c '{"args":["init"]}'
+peer chaincode instantiate -n book -v 0 -C bookchannel -c '{"args":[]}'
+peer chaincode invoke -n book -C bookchannel -c '{"args":["registerUser","e1","Pritam Singh","A-226","9119216041"]}'
+
+peer chaincode upgrade -n book -v 1.1 -C bookchannel -c '{"args":[]}'

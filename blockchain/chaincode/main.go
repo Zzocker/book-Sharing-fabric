@@ -20,7 +20,7 @@ func (c *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 		return registerUser(stub, args)
 	}
 	if funcName == "userGateway" {
-		return userGateway(stub,args)
+		return userGateway(stub, args)
 	}
 	return shim.Success(nil)
 }
