@@ -35,8 +35,8 @@ In this project,we are trying to build a decentralized platform for students to 
 3.      nodemon ./testapi/api.js
 
 # Description of APIs
-Route | Method| Description | Authorization 
--------|-------|-------------|--------------
+Route | Method| Description
+-------|-------|-----------|
 /register| POST | Register the users to the platform 
 /login | POST | Login the user to the platdorm 
 /addbook | POST | AddBook
