@@ -12,10 +12,10 @@ In this project,we are trying to build a decentralized platform for students to 
 
 # Start The network
 ## Generate the channel artifacts and crypto files
-1. cryptogen generate --config=./crypto-config.yaml </br>
-2. configtxgen -profile Genesis -outputBlock channel-artifacts/genesis.block -channelID genesis </br>
-3. configtxgen -outputCreateChannelTx channel-artifacts/channel.tx -profile BookChannel -channelID bookchannel </br>
-4. configtxgen -outputAnchorPeersUpdate channel-artifacts/HostAnchorUPdate.tx -profile BookChannel -channelID bookchannel -asOrg Host
+        cryptogen generate --config=./crypto-config.yaml 
+        configtxgen -profile Genesis -outputBlock channel-artifacts/genesis.block -channelID genesis 
+        configtxgen -outputCreateChannelTx channel-artifacts/channel.tx -profile BookChannel -channelID bookchannel 
+        configtxgen -outputAnchorPeersUpdate channel-artifacts/HostAnchorUPdate.tx -profile BookChannel -channelID bookchannel -asOrg Host
 ## Start Docker Containers and setup the peers
 1. Change the *-cert.pem to ``cert.pem`` in ca folder of peerOrganizations , and private key to ```PRIVATE_KEY```
 2.      cd blockchain/network/dockerblockchain
