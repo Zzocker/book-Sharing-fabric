@@ -1,4 +1,4 @@
-# book-Sharing-fabric
+# Book-Sharing-fabric
 
 ## Overview
 As most of us know that hard-copy books are very costly and 
@@ -9,6 +9,50 @@ In this project,we are trying to build a decentralized platform for students to 
 1. owner of book can track his/her book in realtime.
 2. Books will be secured using the fabric network.
 3. The owner can remove his/her book from the platform.
+
+# Start The network
+## Generate the channel artifacts and crypto files
+1. cryptogen generate --config=./crypto-config.yaml </br>
+2. configtxgen -profile Genesis -outputBlock channel-artifacts/genesis.block -channelID genesis </br>
+3. configtxgen -outputCreateChannelTx channel-artifacts/channel.tx -profile BookChannel -channelID bookchannel </br>
+4. configtxgen -outputAnchorPeersUpdate channel-artifacts/HostAnchorUPdate.tx -profile BookChannel -channelID bookchannel -asOrg Host
+## Start Docker Containers and setup the peers
+1. Change the *-cert.pem to ``cert.pem`` in ca folder of peerOrganizations , and private key to ```PRIVATE_KEY```
+2.      cd blockchain/network/dockerblockchain
+        docker-compose up -d
+3.      docker exec -it cli bash
+        cd /channel-artifacts
+        peer channel create -f channel.tx -o orderer:7050 -c bookchannel
+        peer channel join -b bookchannel.block
+        peer channel update -f HostAnchorUPdate.tx -o orderer:7050 -c bookchannel
+        peer chaincode install -n book -v 0 -p chaincode
+        peer chaincode instantiate -n book -v 0 -C bookchannel -c '{"args":[]}'
+
+## Fire up the AIPs
+1. cd blockchain/app/
+2.      node ./client/enrollAdmin.js
+        node ./client/clientRegister.js
+3.      nodemon ./testapi/api.js
+
+# Description of APIs
+Route | Method| Description | Authorization 
+-------|-------|-------------|--------------
+/register| POST | Register the users to the platform 
+/login | POST | Login the user to the platdorm 
+/addbook | POST | AddBook
+/changecover | PUT | Change the cover of book 
+/removebook/:isbn | DELETE | delete the book from platform 
+/requestbook/:isbn |POST | Request book from current user
+/respondrequest | PUT | respond to the request 
+/transferbook | PUT| Transfer book between the users
+/getrequest/:isbn | GET | get request with given isbn of book
+/getuser/:email | GET| get user 
+/getbook/:isbn | GET | get book
+/me | GET |get the logined user
+/getallownedbook | GET | get all the owned book
+/getallcurentbook | GET | get current book are with user
+/getallrequest |GET | get all the pending request
+
 
 ## Language and Technology in use
 1. Golang

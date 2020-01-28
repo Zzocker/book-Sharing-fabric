@@ -1,9 +1,12 @@
 const express = require('express')
 const network = require('./contract')
+const mongo = require('./mongo')
 const routes = express.Router()
 
 routes.post('/register',async (req,res)=>{
     try {
+        const user = new mongo.User(req.body) /// from mongo
+        await user.save() /// from mongo
         rbody = req.body
         const contract = await network.contract()
        const response = await contract.submitTransaction("registerUser",rbody.email,rbody.name,rbody.room_no,rbody.phone_no)
@@ -16,11 +19,26 @@ routes.post('/register',async (req,res)=>{
         })
     }
 })
-routes.post('/addbook',async (req,res)=>{
+routes.post('/login', async(req, res) => {
+    //Login a registered user
+    try {
+        const { email, password } = req.body
+        const user = await mongo.User.findByCredentials(email, password)
+        if (!user) {
+            return res.status(401).send({error: 'Login failed! Check authentication credentials'})
+        }
+        const token = await user.generateAuthToken()
+        res.send({ token })
+    } catch (error) {
+        res.status(400).send(error)
+    }
+
+})
+routes.post('/addbook',mongo.auth,async (req,res)=>{
     try {
         rbody = req.body
         const contract = await network.contract()
-       const response = await contract.submitTransaction("userGateway",req.headers.email,"addBook",rbody.isbn,rbody.name,rbody.author)
+       const response = await contract.submitTransaction("userGateway",req.email,"addBook",rbody.isbn,rbody.name,rbody.author)
         res.status(200).json({
             msg:"successfully added book to platform"
         })
@@ -30,12 +48,12 @@ routes.post('/addbook',async (req,res)=>{
         })
     }
 })
-routes.put('/changecover',async (req,res)=>{
+routes.put('/changecover',mongo.auth,async (req,res)=>{
     try {
         const rbody = req.body
         const email = req.headers.email
         const contract = await network.contract()
-        const response = await contract.submitTransaction("userGateway",email,'changeCover',rbody.isbn,rbody.cover)
+        const response = await contract.submitTransaction("userGateway",req.email,'changeCover',rbody.isbn,rbody.cover)
         res.status(200).json({   
             msg:`successfully updated you book's cover image`
         })
@@ -45,11 +63,11 @@ routes.put('/changecover',async (req,res)=>{
         })
     }
 })
-routes.delete('/removebook/:isbn',async (req,res)=>{
+routes.delete('/removebook/:isbn',mongo.auth,async (req,res)=>{
     try {
         const email = req.headers.email
         const contract = await network.contract()
-        const response = await contract.submitTransaction("userGateway",email,'removeBook',req.params.isbn)
+        const response = await contract.submitTransaction("userGateway",req.email,'removeBook',req.params.isbn)
         res.status(200).json({   
             msg:`successfully removed you book from our network`
         })
@@ -59,11 +77,11 @@ routes.delete('/removebook/:isbn',async (req,res)=>{
         })
     }
 })
-routes.post('/requestbook/:isbn',async (req,res)=>{
+routes.post('/requestbook/:isbn',mongo.auth,async (req,res)=>{
     try {
         const email = req.headers.email
         const contract = await network.contract()
-        await contract.submitTransaction("userGateway",email,'requestBook',req.params.isbn,email)
+        await contract.submitTransaction("userGateway",req.email,'requestBook',req.params.isbn,email)
         res.status(200).json({   
             msg:`Request has been sent to current owner of book`
         })
@@ -73,12 +91,12 @@ routes.post('/requestbook/:isbn',async (req,res)=>{
         })
     }
 })
-routes.put('/respondrequest',async (req,res)=>{
+routes.put('/respondrequest',mongo.auth,async (req,res)=>{
     try {
         const rbody = req.body
         const email = req.headers.email
         const contract = await network.contract()
-        const response = await contract.submitTransaction("userGateway",email,'respondRequest',rbody.isbn,email,rbody.response)
+        const response = await contract.submitTransaction("userGateway",req.email,'respondRequest',rbody.isbn,email,rbody.response)
         res.status(200).json({   
             msg:`Responeded the request`
         })
@@ -88,12 +106,12 @@ routes.put('/respondrequest',async (req,res)=>{
         })
     }
 })
-routes.put('/transferbook',async (req,res)=>{
+routes.put('/transferbook',mongo.auth,async (req,res)=>{
     try {
         const rbody = req.body
         const email = req.headers.email
         const contract = await network.contract()
-        const response = await contract.submitTransaction("userGateway",email,'transferBook',rbody.isbn,email)
+        const response = await contract.submitTransaction("userGateway",req.email,'transferBook',rbody.isbn,email)
         res.status(200).json({   
             msg:`Transfered the book`
         })
@@ -111,9 +129,9 @@ routes.put('/transferbook',async (req,res)=>{
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////QUERY///////////////////////////////////////////////////////////////
 
-routes.get('/getrequest/:isbn',async (req,res)=>{
+routes.get('/getrequest/:isbn',mongo.auth,async (req,res)=>{
     try {
-        const email = req.headers.email
+        const email = req.email
         const contract = await network.contract()
         const response = await contract.evaluateTransaction("userGateway",email,"getTheRequest",req.params.isbn,email)
         res.status(200).json({   
@@ -125,11 +143,11 @@ routes.get('/getrequest/:isbn',async (req,res)=>{
         })
     }
 })
-routes.get('/getuser/:email',async (req,res)=>{
+routes.get('/getuser/:email',mongo.auth,async (req,res)=>{
     try {
         const email = req.headers.email
         const contract = await network.contract()
-        const response = await contract.evaluateTransaction("userGateway",email,"getTheUser",req.params.email)
+        const response = await contract.evaluateTransaction("userGateway",req.email,"getTheUser",req.params.email)
         res.status(200).json({   
             books: JSON.parse(response)
         })
@@ -139,11 +157,10 @@ routes.get('/getuser/:email',async (req,res)=>{
         })
     }
 })
-routes.get('/getbook/:isbn',async (req,res)=>{
+routes.get('/getbook/:isbn',mongo.auth,async (req,res)=>{
     try {
-        const email = req.headers.email
         const contract = await network.contract()
-        const response = await contract.evaluateTransaction("userGateway",email,"getTheBook",req.params.isbn)
+        const response = await contract.evaluateTransaction("userGateway",req.email,"getTheBook",req.params.isbn)
         res.status(200).json({   
             books: JSON.parse(response.Payload)
         })
@@ -153,10 +170,10 @@ routes.get('/getbook/:isbn',async (req,res)=>{
         })
     }
 })
-routes.get('/getuser/:email',async (req,res)=>{
+routes.get('/me',mongo.auth,async (req,res)=>{
     try {
         const contract = await network.contract()
-        const response = await contract.evaluateTransaction("userGateway",req.params.email,"getUser")
+        const response = await contract.evaluateTransaction("userGateway",req.email,"getUser")
         res.status(200).json({
             msg:JSON.parse(response)
         })
@@ -166,11 +183,10 @@ routes.get('/getuser/:email',async (req,res)=>{
         })
     }
 })
-routes.get('/getallownedbook',async (req,res)=>{
+routes.get('/getallownedbook',mongo.auth,async (req,res)=>{
     try {
-        const email = req.headers.email
         const contract = await network.contract()
-        const response = await contract.evaluateTransaction("userGateway",email,"getAllOwnedBook")
+        const response = await contract.evaluateTransaction("userGateway",req.email,"getAllOwnedBook")
         res.status(200).json({   
             books: JSON.parse(response)
         })
@@ -180,11 +196,10 @@ routes.get('/getallownedbook',async (req,res)=>{
         })
     }
 })
-routes.get('/getallcurentbook',async (req,res)=>{
+routes.get('/getallcurentbook',mongo.auth,async (req,res)=>{
     try {
-        const email = req.headers.email
         const contract = await network.contract()
-        const response = await contract.evaluateTransaction("userGateway",email,"getAllCurentBook")
+        const response = await contract.evaluateTransaction("userGateway",req.email,"getAllCurentBook")
         res.status(200).json({   
             books: JSON.parse(response)
         })
@@ -194,11 +209,10 @@ routes.get('/getallcurentbook',async (req,res)=>{
         })
     }
 })
-routes.get('/getallrequest',async (req,res)=>{
+routes.get('/getallrequest',mongo.auth,async (req,res)=>{
     try {
-        const email = req.headers.email
         const contract = await network.contract()
-        const response = await contract.evaluateTransaction("userGateway",email,"getAllRequest")
+        const response = await contract.evaluateTransaction("userGateway",req.email,"getAllRequest")
         res.status(200).json({   
             requests: JSON.parse(response)
         })
