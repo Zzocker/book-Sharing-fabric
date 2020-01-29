@@ -11,7 +11,7 @@ In this project,we are trying to build a decentralized platform for students to 
 3. The owner can remove his/her book from the platform.
 
 # Start The network
-## Generate the channel artifacts and crypto files
+## Generate the channel artifacts and crypto files (Optional)
         cryptogen generate --config=./crypto-config.yaml 
         configtxgen -profile Genesis -outputBlock channel-artifacts/genesis.block -channelID genesis 
         configtxgen -outputCreateChannelTx channel-artifacts/channel.tx -profile BookChannel -channelID bookchannel 
