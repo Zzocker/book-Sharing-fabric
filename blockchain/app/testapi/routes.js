@@ -6,11 +6,10 @@ const routes = express.Router()
 routes.post('/register',async (req,res)=>{
     try {
         rbody = req.body
-        const contract = await network.contract()
-        await contract.submitTransaction("registerUser",rbody.email,rbody.name,rbody.room_no,rbody.phone_no,()=>{
-            const user = new mongo.User(req.body) /// from mongo
+        const user = new mongo.User(req.body) /// from mongo
             await user.save() /// from mongo
-       })
+        const contract = await network.contract()
+        await contract.submitTransaction("registerUser",rbody.email,rbody.name,rbody.room_no,rbody.phone_no)
         res.status(200).json({
             msg:"User successfully registered"
         })
