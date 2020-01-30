@@ -6,10 +6,10 @@ const routes = express.Router()
 routes.post('/register',async (req,res)=>{
     try {
         rbody = req.body
-        const user = new mongo.User(req.body) /// from mongo
-            await user.save() /// from mongo
         const contract = await network.contract()
         await contract.submitTransaction("registerUser",rbody.email,rbody.name,rbody.room_no,rbody.phone_no)
+        const user = new mongo.User(req.body) /// from mongo
+        await user.save() /// from mongo
         res.status(200).json({
             msg:"User successfully registered"
         })
@@ -19,7 +19,7 @@ routes.post('/register',async (req,res)=>{
         })
     }
 })
-routes.post('/login', async(req, res) => {
+routes.post('/login', async(req, res) => { // there should some function that should check if connection is established with blockchain
     //Login a registered user
     try {
         const { email, password } = req.body
