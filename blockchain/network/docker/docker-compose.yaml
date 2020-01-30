@@ -1,80 +1,80 @@
 version: '2'
-volumes: 
+volumes:
     data-host:
     data-orderer:
     data-ca:
     data-database:
-networks: 
+networks:
     bookshare:
-services: 
+services:
     hostpeer:
         container_name: devpeer
-        extends: 
+        extends:
             file: base.yaml
             service: peer-base
-        environment: 
+        environment:
             - CORE_PEER_ID=devpeer
             - CORE_PEER_ADDRESS:devpeer:7051
             - CORE_PEER_LOCALMSPID=HostMSP
             - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=database:5984
             - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
             - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
-        volumes: 
+        volumes:
             - ../crypto-config/peerOrganizations/host.com/peers/devpeer:/peer
             - data-host:/var/hyperledger/production
-        depends_on: 
+        depends_on:
             - database
-        networks: 
+        networks:
             - bookshare
-        ports: 
+        ports:
             - 7051:7051
     database:
         container_name: database
         image: hyperledger/fabric-couchdb:latest
-        environment: 
+        environment:
             - COUCHDB_USER=
             - COUCHDB_PASSWORD=
-        volumes: 
+        volumes:
             - data-database:/opt/couchdb
-        networks: 
+        networks:
             - bookshare
-        ports: 
+        ports:
             - 5984:5984
     orderer:
-        extends: 
+        extends:
             file: base.yaml
             service: orderer-base
         container_name: orderer
-        networks: 
+        networks:
             - bookshare
-        environment: 
+        environment:
             - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
-        volumes: 
+        volumes:
             - data-orderer:/var/hyperledger/production/orderer
             - ../channel-artifacts:/channel-artifacts
             - ../crypto-config/ordererOrganizations/orderer.com/orderers/orderer:/orderer
-        ports: 
+        ports:
             - 7050:7050
     ca:
         container_name: ca
-        extends: 
+        extends:
             file: base.yaml
             service: ca-base
-        environment: 
+        environment:
             - FABRIC_CA_SERVER_CA_NAME=ca
-        volumes: 
+        volumes:
             - ../crypto-config/peerOrganizations/host.com/ca:/ca
             - data-ca:/etc/hyperledger/fabric-ca-server
-        ports: 
+        ports:
             - 7054:7054
-        networks: 
+        networks:
             - bookshare
     cli:
         container_name: cli
         image: hyperledger/fabric-tools:latest
         tty: true
         stdin_open: true
-        environment: 
+        environment:
             - GOPATH=/opt/gopath
             - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
             - FABRIC_LOGGING_SPEC=INFO
@@ -86,10 +86,10 @@ services:
             - CORE_PEER_TLS_CERT_FILE=/crypto-config/peerOrganizations/host.com/users/Admin@host.com/tls/server.crt
             - CORE_PEER_TLS_KEY_FILE=/crypto-config/peerOrganizations/host.com/users/Admin@host.com/tls/server.key
             - CORE_PEER_TLS_ROOTCERT_FILE=/crypto-config/peerOrganizations/host.com/users/Admin@host.com/tls/ca.crt
-        volumes: 
+        volumes:
             - ../crypto-config:/crypto-config
             - ../channel-artifacts:/channel-artifacts
             - /var/run/:/host/var/run/
             - ../../chaincode:/opt/gopath/src/chaincode
-        networks: 
+        networks:
             - bookshare
