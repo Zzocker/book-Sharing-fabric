@@ -64,7 +64,7 @@ Route | Method| Description
 # License
 ```MIT License
 
-Copyright (c) 2020 Pritam Singh
+Copyright (c) 2020 Pritam Singh and Utsav Majhi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
