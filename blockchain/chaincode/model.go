@@ -19,7 +19,7 @@ type Book struct {
 	Author string `json:"author"`
 	Owner string `json:"owner"`
 	Current string `json:"current"`
-	Cover []byte `json:"cover"`
+	Cover string `json:"cover"`
 }
 
 type Request struct {

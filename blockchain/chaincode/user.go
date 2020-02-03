@@ -38,14 +38,14 @@ func userGateway(stub shim.ChaincodeStubInterface, args []string) peer.Response 
 		if funcName == "transferBook" {
 			return transferBook(stub, newargs, user)
 		}
-		if funcName == "getTheRequest"{
-			return getTheRequest(stub,args)
+		if funcName == "getTheRequest" {
+			return getTheRequest(stub, newargs)
 		}
-		if funcName == "getTheUser"{
-			return getTheUser(stub,args)
+		if funcName == "getTheUser" {
+			return getTheUser(stub, newargs)
 		}
-		if funcName == "getTheBook"{
-			return getTheBook(stub,args)
+		if funcName == "getTheBook" {
+			return getTheBook(stub, newargs)
 		}
 	}
 	//query function
@@ -60,63 +60,85 @@ func userGateway(stub shim.ChaincodeStubInterface, args []string) peer.Response 
 		if funcName == "getAllCurentBook" {
 			return getAllCurentBook(stub, user.Current)
 		}
-		if funcName == "getAllRequest"{
-			return getAllRequest(stub,user.Email)
+		if funcName == "getAllRequest" {
+			return getAllRequest(stub, user.Email)
 		}
+	}
+	if funcName == "getAllTheBook" {
+		return getAllTheBook(stub)
 	}
 	return shim.Error("No funcion given")
 
 }
-func getTheRequest(stub shim.ChaincodeStubInterface,args []string) peer.Response{
+func getAllTheBook(stub shim.ChaincodeStubInterface) peer.Response {
+	iterator, err := stub.GetStateByPartialCompositeKey(BOOK, []string{})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	var result []Book
+	defer iterator.Close()
+	for iterator.HasNext() {
+		res, err := iterator.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		var temp Book
+		json.Unmarshal(res.GetValue(), &temp)
+		result = append(result, temp)
+	}
+	output, _ := json.Marshal(result)
+	return shim.Success(output)
+}
+func getTheRequest(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	//args[0]=isbn,args[1]=to_email
-	if len(args)!=2{
+	if len(args) != 2 {
 		return shim.Error("")
 	}
-	key:= getRequestKey(stub,args[1],args[0])
-	RByte,err:= getStateByte(stub,key)
-	if err!=nil{
+	key := getRequestKey(stub, args[1], args[0])
+	RByte, err := getStateByte(stub, key)
+	if err != nil {
 		return shim.Error(err.Error())
 	}
 	return shim.Success(RByte)
-	
+
 }
-func getTheUser(stub shim.ChaincodeStubInterface,args []string) peer.Response{
+func getTheUser(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	//args[0]=email
-	if len(args)!=1{
+	if len(args) != 1 {
 		return shim.Error("")
 	}
-	key:= getUserKey(stub,args[0])
-	RByte,err:= getStateByte(stub,key)
-	if err!=nil{
+	key := getUserKey(stub, args[0])
+	RByte, err := getStateByte(stub, key)
+	if err != nil {
 		return shim.Error(err.Error())
 	}
 	return shim.Success(RByte)
-	
+
 }
-func getTheBook(stub shim.ChaincodeStubInterface,args []string) peer.Response{
+func getTheBook(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	//args[0]=isbn
-	if len(args)!=1{
+	if len(args) != 1 {
 		return shim.Error("")
 	}
-	key:= getBookKey(stub,args[0])
-	RByte,err:= getStateByte(stub,key)
-	if err!=nil{
+	key := getBookKey(stub, args[0])
+	RByte, err := getStateByte(stub, key)
+	if err != nil {
 		return shim.Error(err.Error())
 	}
 	return shim.Success(RByte)
-	
+
 }
 func transferBook(stub shim.ChaincodeStubInterface, args []string, user User) peer.Response {
 	// args[0]= isbn args[1]= to_email
 	if len(args) != 2 {
 		return shim.Error("Require isbn and current user's email")
 	}
-	key:= getRequestKey(stub,args[1],args[0])
-	request, err := getRequest(stub,key)
+	key := getRequestKey(stub, args[1], args[0])
+	request, err := getRequest(stub, key)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if request.ToEmail != user.Email{
+	if request.ToEmail != user.Email {
 		return shim.Error("Owner miss-match")
 	}
 	if request.Status != "1" {
@@ -148,7 +170,7 @@ func respondRequest(stub shim.ChaincodeStubInterface, args []string, email strin
 	if len(args) != 3 {
 		return shim.Error("Require 3 args to respond to request")
 	}
-	key := getRequestKey(stub,args[1],args[0])
+	key := getRequestKey(stub, args[1], args[0])
 	request, err := getRequest(stub, key)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -181,7 +203,7 @@ func requestBook(stub shim.ChaincodeStubInterface, args []string, email string) 
 	}
 	requestKey := getRequestKey(stub, book.Current, args[0])
 	request := Request{
-		ToEmail: book.Current,
+		ToEmail:   book.Current,
 		ISBN:      args[0],
 		FromEmail: email,
 		Status:    "0",
@@ -226,7 +248,7 @@ func changeCover(stub shim.ChaincodeStubInterface, args []string, email string) 
 	if book.Owner != email {
 		return shim.Error("Owner mis-match")
 	}
-	book.Cover = []byte(args[1])
+	book.Cover = args[1]
 	BByte, _ := json.Marshal(book)
 	err = stub.PutState(key, BByte)
 	if err != nil {
@@ -234,23 +256,23 @@ func changeCover(stub shim.ChaincodeStubInterface, args []string, email string) 
 	}
 	return shim.Success(nil)
 }
-func getAllRequest(stub shim.ChaincodeStubInterface,email string) peer.Response  {
+func getAllRequest(stub shim.ChaincodeStubInterface, email string) peer.Response {
 	result := []Request{}
-	Riterator,err:= stub.GetStateByPartialCompositeKey(REQUEST,[]string{email})
-	if err!=nil{
+	Riterator, err := stub.GetStateByPartialCompositeKey(REQUEST, []string{email})
+	if err != nil {
 		return shim.Error(err.Error())
 	}
 	defer Riterator.Close()
-	for Riterator.HasNext(){
-		res ,err:= Riterator.Next()
-		if err!=nil{
+	for Riterator.HasNext() {
+		res, err := Riterator.Next()
+		if err != nil {
 			return shim.Error(err.Error())
 		}
 		var temp Request
-		json.Unmarshal(res.Value,&temp)
-		result = append(result,temp)
+		json.Unmarshal(res.Value, &temp)
+		result = append(result, temp)
 	}
-	output,_:= json.Marshal(result)
+	output, _ := json.Marshal(result)
 	return shim.Success(output)
 }
 func getAllCurentBook(stub shim.ChaincodeStubInterface, books map[string]int64) peer.Response {
@@ -303,7 +325,7 @@ func addBook(stub shim.ChaincodeStubInterface, args []string, user User) peer.Re
 		Author:   args[2],
 		Owner:    user.Email,
 		Current:  user.Email,
-		Cover:    []byte{},
+		Cover:    "",
 	}
 	BByte, _ := json.Marshal(book)
 	stub.PutState(key, BByte)
