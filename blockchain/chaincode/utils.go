@@ -7,31 +7,23 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 )
 
-func getUserKey(stub shim.ChaincodeStubInterface, email string) string {
-	key, _ := stub.CreateCompositeKey(USER, []string{email})
+func getLoginKey(stub shim.ChaincodeStubInterface, email string) string {
+	key, _ := stub.CreateCompositeKey(LOGIN, []string{email})
 	return key
 }
-func getBookKey(stub shim.ChaincodeStubInterface, isbn string) string {
-	key, _ := stub.CreateCompositeKey(BOOK, []string{isbn})
-	return key
-}
-func getRequestKey(stub shim.ChaincodeStubInterface, email, isbn string) string {
-	key, _ := stub.CreateCompositeKey(REQUEST, []string{email, isbn})
-	return key
-}
-func getStateByte(stub shim.ChaincodeStubInterface, key string) ([]byte, error) {
+func getStateByte(stub shim.ChaincodeStubInterface, key string) ([]byte, error, bool) {
 	SByte, err := stub.GetState(key)
 	if err != nil {
-		return nil, err
+		return nil, err, false
 	}
 	if len(SByte) == 0 {
-		return nil, fmt.Errorf("State doesn't exists")
+		return nil, fmt.Errorf("State doesn't exists"), false
 	}
-	return SByte, nil
+	return SByte, nil, true
 }
 func getUser(stub shim.ChaincodeStubInterface, key string) (User, error) {
-	RByte, err := getStateByte(stub, key)
-	if err != nil {
+	RByte, err, ok := getStateByte(stub, key)
+	if ok != true {
 		return User{}, err
 	}
 	var user User
@@ -39,8 +31,8 @@ func getUser(stub shim.ChaincodeStubInterface, key string) (User, error) {
 	return user, nil
 }
 func getBook(stub shim.ChaincodeStubInterface, key string) (Book, error) {
-	BByte, err := getStateByte(stub, key)
-	if err != nil {
+	BByte, err, ok := getStateByte(stub, key)
+	if ok != true {
 		return Book{}, err
 	}
 	var book Book
@@ -48,8 +40,8 @@ func getBook(stub shim.ChaincodeStubInterface, key string) (Book, error) {
 	return book, nil
 }
 func getRequest(stub shim.ChaincodeStubInterface, key string) (Request, error) {
-	RByte, err := getStateByte(stub, key)
-	if err != nil {
+	RByte, err, ok := getStateByte(stub, key)
+	if ok != true {
 		return Request{}, err
 	}
 	var request Request

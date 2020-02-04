@@ -31,4 +31,4 @@ peer chaincode install -n book -v 0 -p chaincode
 peer chaincode instantiate -n book -v 0 -C bookchannel -c '{"args":[]}'
 peer chaincode invoke -n book -C bookchannel -c '{"args":["registerUser","e1","Pritam Singh","A-226","9119216041"]}'
 
-peer chaincode upgrade -n book -v 1.1 -C bookchannel -c '{"args":[]}'
+peer chaincode upgrade -n book -v 1.1 -C bookchannel -c '{"args":[]}' 

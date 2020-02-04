@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/peer"
 )
@@ -12,7 +13,7 @@ func userGateway(stub shim.ChaincodeStubInterface, args []string) peer.Response 
 	if len(args) < 2 {
 		return shim.Error("Need email id of user and function")
 	}
-	user, err := getUser(stub, getUserKey(stub, args[0]))
+	user, err := getUser(stub, args[0])
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -60,13 +61,13 @@ func userGateway(stub shim.ChaincodeStubInterface, args []string) peer.Response 
 		if funcName == "getAllCurentBook" {
 			return getAllCurentBook(stub, user.Current)
 		}
-		if funcName == "getAllRequest" {
-			return getAllRequest(stub, user.Email)
-		}
+		// if funcName == "getAllRequest" {
+		// 	return getAllRequest(stub, user.Email)
+		// }
 	}
-	if funcName == "getAllTheBook" {
-		return getAllTheBook(stub)
-	}
+	// if funcName == "getAllTheBook" {
+	// 	return getAllTheBook(stub)
+	// }
 	return shim.Error("No funcion given")
 
 }
@@ -90,13 +91,13 @@ func getAllTheBook(stub shim.ChaincodeStubInterface) peer.Response {
 	return shim.Success(output)
 }
 func getTheRequest(stub shim.ChaincodeStubInterface, args []string) peer.Response {
-	//args[0]=isbn,args[1]=to_email
-	if len(args) != 2 {
-		return shim.Error("")
+	//args[0]=request ID
+	if len(args) != 1 {
+		return shim.Error("Only one args required")
 	}
-	key := getRequestKey(stub, args[1], args[0])
-	RByte, err := getStateByte(stub, key)
-	if err != nil {
+	key := args[0]
+	RByte, err, ok := getStateByte(stub, key)
+	if ok != true {
 		return shim.Error(err.Error())
 	}
 	return shim.Success(RByte)
@@ -107,9 +108,9 @@ func getTheUser(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	if len(args) != 1 {
 		return shim.Error("")
 	}
-	key := getUserKey(stub, args[0])
-	RByte, err := getStateByte(stub, key)
-	if err != nil {
+	key := args[0]
+	RByte, err, ok := getStateByte(stub, key)
+	if ok != true {
 		return shim.Error(err.Error())
 	}
 	return shim.Success(RByte)
@@ -120,57 +121,61 @@ func getTheBook(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	if len(args) != 1 {
 		return shim.Error("")
 	}
-	key := getBookKey(stub, args[0])
-	RByte, err := getStateByte(stub, key)
-	if err != nil {
+	key := args[0]
+	RByte, err, ok := getStateByte(stub, key)
+	if ok != true {
 		return shim.Error(err.Error())
 	}
 	return shim.Success(RByte)
 
 }
 func transferBook(stub shim.ChaincodeStubInterface, args []string, user User) peer.Response {
-	// args[0]= isbn args[1]= to_email
+	// args[0]= request Id , args[1]=isbn
 	if len(args) != 2 {
-		return shim.Error("Require isbn and current user's email")
+		return shim.Error("Require request Id and scanned isbn code")
 	}
-	key := getRequestKey(stub, args[1], args[0])
+	key := args[0]
 	request, err := getRequest(stub, key)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if request.ToEmail != user.Email {
-		return shim.Error("Owner miss-match")
-	}
 	if request.Status != "1" {
 		return shim.Error("Request is not accepted")
 	}
+	if request.FromEmail != user.Email {
+		return shim.Error("Owner miss-match")
+	}
+	if request.ISBN != args[1] {
+		return shim.Error("This is not the book")
+	}
 	isbn := request.ISBN
-	book, err := getBook(stub, getBookKey(stub, isbn))
+	book, err := getBook(stub, isbn)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	Touser, err := getUser(stub, getUserKey(stub, request.FromEmail))
+	currentOwner, err := getUser(stub, request.ToEmail)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	Touser.Current[isbn] = time.Now().Unix()
-	BByte, _ := json.Marshal(Touser)
-	stub.PutState(getUserKey(stub, request.FromEmail), BByte)
-	book.Current = request.FromEmail
-	BByte, _ = json.Marshal(book)
-	stub.PutState(getBookKey(stub, isbn), BByte)
-	delete(user.Current, isbn)
-	stub.DelState(key)
-	UByte, _ := json.Marshal(user)
-	stub.PutState(getUserKey(stub, user.Email), UByte)
+	delete(currentOwner.Current, isbn)
+	book.Current = user.Email
+	user.Current[isbn] = time.Now().Unix()
+
+	SByte, _ := json.Marshal(currentOwner)
+	stub.PutState(request.ToEmail, SByte)
+	SByte, _ = json.Marshal(book)
+	stub.PutState(isbn, SByte)
+	SByte, _ = json.Marshal(user)
+	stub.PutState(user.Email, SByte)
+	stub.DelState(args[0])
 	return shim.Success(nil)
 }
 func respondRequest(stub shim.ChaincodeStubInterface, args []string, email string) peer.Response {
-	//args[0]= isbn , ,args[1]= To_email args[2]= response
-	if len(args) != 3 {
-		return shim.Error("Require 3 args to respond to request")
+	//args[0]= request Id , response = args[1]
+	if len(args) != 2 {
+		return shim.Error("Require one args to respond to request")
 	}
-	key := getRequestKey(stub, args[1], args[0])
+	key := args[0]
 	request, err := getRequest(stub, key)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -189,20 +194,22 @@ func respondRequest(stub shim.ChaincodeStubInterface, args []string, email strin
 	return shim.Success(nil)
 }
 func requestBook(stub shim.ChaincodeStubInterface, args []string, email string) peer.Response {
-	// args[0]=isbn args[1]= current emails
-	if len(args) != 2 {
-		return shim.Error("Require 2 args to make book request")
+	// args[0]=isbn
+	if len(args) != 1 {
+		return shim.Error("Require 1 args to make book request")
 	}
-	Bookkey := getBookKey(stub, args[0])
+	Bookkey := args[0]
 	book, err := getBook(stub, Bookkey)
 	if err != nil {
-		return shim.Error("Book doesn't exists!!")
+		return shim.Error(err.Error())
 	}
 	if book.Current == email {
-		return shim.Error("Cannot request ownself")
+		return shim.Error("Cannot request own book")
 	}
-	requestKey := getRequestKey(stub, book.Current, args[0])
+	requestKey := uuid.New().String()
 	request := Request{
+		Id:        requestKey,
+		DocType:   REQUEST,
 		ToEmail:   book.Current,
 		ISBN:      args[0],
 		FromEmail: email,
@@ -217,7 +224,7 @@ func removeBook(stub shim.ChaincodeStubInterface, args []string, user User) peer
 	if len(args) != 1 {
 		return shim.Error("Require 1 args to remove book")
 	}
-	key := getBookKey(stub, args[0])
+	key := args[0]
 	book, err := getBook(stub, key)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -230,7 +237,7 @@ func removeBook(stub shim.ChaincodeStubInterface, args []string, user User) peer
 		delete(user.Owned, args[0])
 		delete(user.Current, args[0])
 		UByte, _ := json.Marshal(user)
-		stub.PutState(getUserKey(stub, user.Email), UByte)
+		stub.PutState(user.Email, UByte)
 		return shim.Success(nil)
 	}
 	return shim.Error("Owner mis-match")
@@ -240,7 +247,7 @@ func changeCover(stub shim.ChaincodeStubInterface, args []string, email string) 
 	if len(args) != 2 {
 		return shim.Error("Require 2 args to add/change cover of book")
 	}
-	key := getBookKey(stub, args[0])
+	key := args[0]
 	book, err := getBook(stub, key)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -281,7 +288,7 @@ func getAllCurentBook(stub shim.ChaincodeStubInterface, books map[string]int64) 
 		GotOn      int64 `json:"got_on"`
 	}{}
 	for isbn, value := range books {
-		b, err := getBook(stub, getBookKey(stub, isbn))
+		b, err := getBook(stub, isbn)
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -300,7 +307,7 @@ func getAllCurentBook(stub shim.ChaincodeStubInterface, books map[string]int64) 
 func getAllOwnedBook(stub shim.ChaincodeStubInterface, books map[string]bool) peer.Response {
 	var results []Book
 	for isbn, _ := range books {
-		temp, err := getBook(stub, getBookKey(stub, isbn))
+		temp, err := getBook(stub, isbn)
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -314,12 +321,14 @@ func addBook(stub shim.ChaincodeStubInterface, args []string, user User) peer.Re
 	if len(args) != 3 {
 		return shim.Error("Require 3 args for adding new book to platform")
 	}
-	key := getBookKey(stub, args[0])
-	_, err := getStateByte(stub, key)
-	if err == nil {
-		return shim.Error("Book Already exists")
+	key := args[0]
+	_, err, ok := getStateByte(stub, key)
+	if ok == true {
+		return shim.Error(err.Error())
 	}
 	book := Book{
+		DocType:  BOOK,
+		Weight:   0,
 		ISBN:     args[0],
 		BookName: args[1],
 		Author:   args[2],
@@ -332,20 +341,21 @@ func addBook(stub shim.ChaincodeStubInterface, args []string, user User) peer.Re
 	user.Current[args[0]] = time.Now().Unix()
 	user.Owned[args[0]] = true
 	UByte, _ := json.Marshal(user)
-	stub.PutState(getUserKey(stub, user.Email), UByte)
+	stub.PutState(user.Email, UByte)
 	return shim.Success(nil)
 }
 func registerUser(stub shim.ChaincodeStubInterface, args []string) peer.Response {
-	// args[0]=email , args[1]= name , args[2]= room_no , args[3]=phone_no
-	if len(args) != 4 {
-		return shim.Error("provide 4 args To register new user")
+	// args[0]=email , args[1]= name , args[2]= room_no , args[3]=phone_no args[4]=password (encrypted)
+	if len(args) != 5 {
+		return shim.Error("provide 5 args To register new user")
 	}
-	key := getUserKey(stub, args[0])
-	_, err := getStateByte(stub, key)
-	if err == nil {
-		return shim.Error("User already registered")
+	key := args[0]
+	_, err, ok := getStateByte(stub, key)
+	if ok != false {
+		return shim.Error(err.Error())
 	}
 	user := User{
+		DocType: USER,
 		Email:   args[0],
 		Name:    args[1],
 		RoomNo:  args[2],
@@ -355,6 +365,15 @@ func registerUser(stub shim.ChaincodeStubInterface, args []string) peer.Response
 	}
 	UByte, _ := json.Marshal(user)
 	err = stub.PutState(key, UByte)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	login := Login{
+		Email:    user.Email,
+		Password: args[4],
+	}
+	LByte, _ := json.Marshal(login)
+	err = stub.PutState(getLoginKey(stub, user.Email), LByte)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
