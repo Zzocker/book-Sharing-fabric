@@ -101,7 +101,6 @@ func getTheRequest(stub shim.ChaincodeStubInterface, args []string) peer.Respons
 		return shim.Error(err.Error())
 	}
 	return shim.Success(RByte)
-
 }
 func getTheUser(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	//args[0]=email
@@ -335,6 +334,7 @@ func addBook(stub shim.ChaincodeStubInterface, args []string, user User) peer.Re
 		Owner:    user.Email,
 		Current:  user.Email,
 		Cover:    "",
+		AddedOn:  time.Now().Unix(),
 	}
 	BByte, _ := json.Marshal(book)
 	stub.PutState(key, BByte)

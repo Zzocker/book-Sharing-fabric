@@ -136,13 +136,13 @@ routes.put('/transferbook',utils.auth,async (req,res)=>{
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////QUERY///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////QUERY///////////////////////////////////////////////////
 
-routes.get('/getrequest/:isbn',utils.auth,async (req,res)=>{
+routes.get('/getrequest/:request_id',utils.auth,async (req,res)=>{
     try {
         const email = req.email
         const contract = await network.contract()
-        const response = await contract.evaluateTransaction("userGateway",email,"getTheRequest",req.params.isbn,email)
+        const response = await contract.evaluateTransaction("userGateway",email,"getTheRequest",req.params.request_id)
         res.status(200).json({   
             books: JSON.parse(response)
         })
@@ -231,17 +231,17 @@ routes.get('/getallcurentbook',utils.auth,async (req,res)=>{
         })
     }
 })
-routes.get('/getallrequest',utils.auth,async (req,res)=>{
-    try {
-        const contract = await network.contract()
-        const response = await contract.evaluateTransaction("userGateway",req.email,"getAllRequest")
-        res.status(200).json({   
-            requests: JSON.parse(response)
-        })
-    } catch (error) {
-        res.status(500).json({
-            msg:error.message
-        })
-    }
-})
+// routes.get('/getallrequest',utils.auth,async (req,res)=>{
+//     try {
+//         const contract = await network.contract()
+//         const response = await contract.evaluateTransaction("userGateway",req.email,"getAllRequest")
+//         res.status(200).json({   
+//             requests: JSON.parse(response)
+//         })
+//     } catch (error) {
+//         res.status(500).json({
+//             msg:error.message
+//         })
+//     }
+// })
 module.exports=routes

@@ -28,6 +28,7 @@ type Book struct {
 	Owner    string `json:"owner"`
 	Current  string `json:"current"`
 	Cover    string `json:"cover"`
+	AddedOn int64 `json:"added_on"`
 }
 
 type Request struct {
