@@ -1,42 +1,52 @@
 const express = require('express')
 const network = require('./contract')
-const mongo = require('./mongo')
+const validator = require('validator')
+const sha256 = require('sha256')
+const utils = require('./utils')
 const routes = express.Router()
 
 routes.post('/register',async (req,res)=>{
     try {
         rbody = req.body
+        if (!validator.isEmail(rbody.email)){
+            res.status(500).json({
+                msg:"Invaild email ID"
+            })
+        }
+        if (rbody.password.length<8){
+            res.status(500).json({
+                msg:"length of password should be greater then 7"
+            })
+        }
+        password = sha256(rbody.password)
         const contract = await network.contract()
-        await contract.submitTransaction("registerUser",rbody.email,rbody.name,rbody.room_no,rbody.phone_no)
-        const user = new mongo.User(req.body) /// from mongo
-        await user.save() /// from mongo
-        const token = await user.generateAuthToken()
+        await contract.submitTransaction("registerUser",rbody.email,rbody.name,rbody.room_no,rbody.phone_no,password)
+        const token = utils.generateAuthToken(rbody.email)
         res.status(200).json({
             msg:"User successfully registered",
             token: token
         })
     } catch (error) {
         res.status(500).json({
-            msg: error.message
+            msg: error
         })
     }
 })
-routes.post('/login', async(req, res) => { // there should some function that should check if connection is established with blockchain
+routes.get('/login', async(req, res) => { // there should some function that should check if connection is established with blockchain
     //Login a registered user
     try {
         const { email, password } = req.body
-        const user = await mongo.User.findByCredentials(email, password)
-        if (!user) {
-            return res.status(401).send({error: 'Login failed! Check authentication credentials'})
-        }
-        const token = await user.generateAuthToken()
-        res.send({ token })
+        Encpassword = sha256(password)
+        const contract = await network.contract()
+        await contract.evaluateTransaction("login",email,Encpassword)
+        const token = utils.generateAuthToken(email)
+        res.json({ token })
     } catch (error) {
-        res.status(400).send(error)
+        res.status(400).json({error,Encpassword})
     }
 
 })
-routes.post('/addbook',mongo.auth,async (req,res)=>{
+routes.post('/addbook',utils.auth,async (req,res)=>{
     try {
         rbody = req.body
         const contract = await network.contract()
@@ -50,7 +60,7 @@ routes.post('/addbook',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.put('/changecover',mongo.auth,async (req,res)=>{
+routes.put('/changecover',utils.auth,async (req,res)=>{
     try {
         const rbody = req.body
         const email = req.email
@@ -65,7 +75,7 @@ routes.put('/changecover',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.delete('/removebook/:isbn',mongo.auth,async (req,res)=>{
+routes.delete('/removebook/:isbn',utils.auth,async (req,res)=>{
     try {
         const contract = await network.contract()
         const response = await contract.submitTransaction("userGateway",req.email,'removeBook',req.params.isbn)
@@ -78,7 +88,7 @@ routes.delete('/removebook/:isbn',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.post('/requestbook/:isbn',mongo.auth,async (req,res)=>{
+routes.post('/requestbook/:isbn',utils.auth,async (req,res)=>{
     try {
 
         const contract = await network.contract()
@@ -92,7 +102,7 @@ routes.post('/requestbook/:isbn',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.put('/respondrequest',mongo.auth,async (req,res)=>{
+routes.put('/respondrequest',utils.auth,async (req,res)=>{
     try {
         const rbody = req.body
         const contract = await network.contract()
@@ -106,7 +116,7 @@ routes.put('/respondrequest',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.put('/transferbook',mongo.auth,async (req,res)=>{
+routes.put('/transferbook',utils.auth,async (req,res)=>{
     try {
         const rbody = req.body
         const contract = await network.contract()
@@ -128,7 +138,7 @@ routes.put('/transferbook',mongo.auth,async (req,res)=>{
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////QUERY///////////////////////////////////////////////////////////////
 
-routes.get('/getrequest/:isbn',mongo.auth,async (req,res)=>{
+routes.get('/getrequest/:isbn',utils.auth,async (req,res)=>{
     try {
         const email = req.email
         const contract = await network.contract()
@@ -142,7 +152,7 @@ routes.get('/getrequest/:isbn',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.get('/getallthebook',mongo.auth,async (req,res)=>{
+routes.get('/getallthebook',utils.auth,async (req,res)=>{
     try {
         const email = req.email
         const contract = await network.contract()
@@ -156,7 +166,7 @@ routes.get('/getallthebook',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.get('/getuser/:email',mongo.auth,async (req,res)=>{
+routes.get('/getuser/:email',utils.auth,async (req,res)=>{
     try {	
         const contract = await network.contract()
         const response = await contract.evaluateTransaction("userGateway",req.email,"getTheUser",req.params.email)
@@ -169,7 +179,7 @@ routes.get('/getuser/:email',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.get('/getbook/:isbn',mongo.auth,async (req,res)=>{
+routes.get('/getbook/:isbn',utils.auth,async (req,res)=>{
     try {
         const contract = await network.contract()
         const response = await contract.evaluateTransaction("userGateway",req.email,"getTheBook",req.params.isbn)
@@ -182,7 +192,7 @@ routes.get('/getbook/:isbn',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.get('/me',mongo.auth,async (req,res)=>{
+routes.get('/me',utils.auth,async (req,res)=>{
     try {
         const contract = await network.contract()
         const response = await contract.evaluateTransaction("userGateway",req.email,"getUser")
@@ -195,7 +205,7 @@ routes.get('/me',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.get('/getallownedbook',mongo.auth,async (req,res)=>{
+routes.get('/getallownedbook',utils.auth,async (req,res)=>{
     try {
         const contract = await network.contract()
         const response = await contract.evaluateTransaction("userGateway",req.email,"getAllOwnedBook")
@@ -208,7 +218,7 @@ routes.get('/getallownedbook',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.get('/getallcurentbook',mongo.auth,async (req,res)=>{
+routes.get('/getallcurentbook',utils.auth,async (req,res)=>{
     try {
         const contract = await network.contract()
         const response = await contract.evaluateTransaction("userGateway",req.email,"getAllCurentBook")
@@ -221,7 +231,7 @@ routes.get('/getallcurentbook',mongo.auth,async (req,res)=>{
         })
     }
 })
-routes.get('/getallrequest',mongo.auth,async (req,res)=>{
+routes.get('/getallrequest',utils.auth,async (req,res)=>{
     try {
         const contract = await network.contract()
         const response = await contract.evaluateTransaction("userGateway",req.email,"getAllRequest")

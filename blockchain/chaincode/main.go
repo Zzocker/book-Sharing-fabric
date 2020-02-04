@@ -24,6 +24,9 @@ func (c *BookChaincode) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 	if funcName == "login" {
 		return login(stub, args)
 	}
+	if funcName == "checkLogin"{
+		return checkLogin(stub,args)
+	}
 	if funcName == "userGateway" {
 		return userGateway(stub, args)
 	}
@@ -48,6 +51,14 @@ func login(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	json.Unmarshal(LByte, &login)
 	if login.Password != args[1] {
 		return shim.Error("Incorrect password")
+	}
+	return shim.Success(nil)
+}
+func checkLogin(stub shim.ChaincodeStubInterface,args []string)peer.Response  {
+	// args[0] = email
+	_,err,ok:= getStateByte(stub,getLoginKey(stub,args[0]))
+	if ok!=true{
+		return shim.Error(err.Error())
 	}
 	return shim.Success(nil)
 }
