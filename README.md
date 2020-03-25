@@ -119,8 +119,8 @@ Route | Method| Description
 
 Reach out to me at one of the following places!
 
-- Linkedin at<a href="https://www.linkedin.com/in/utsav-majhi/" target="_blank">`Link`</a>
-- Facebook at <a href="https://www.facebook.com/utsav.majhi.3" target="_blank">`Link`</a>
+- Linkedin at<a href="https://www.linkedin.com/in/pritam-singh-b1807617b/" target="_blank">`Link`</a>
+- Facebook at <a href="https://www.facebook.com/PreeBlock" target="_blank">`Link`</a>
 
 
 ---
