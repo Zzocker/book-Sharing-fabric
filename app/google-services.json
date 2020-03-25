@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "690987320952",
+    "firebase_url": "https://barcoder-e5bdd.firebaseio.com",
+    "project_id": "barcoder-e5bdd",
+    "storage_bucket": "barcoder-e5bdd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:690987320952:android:ef351ddbc47755c0af8f8d",
+        "android_client_info": {
+          "package_name": "com.example.t1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "690987320952-epvnq3436d4ghop2re4mt8ibbooe0o49.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.t1",
+            "certificate_hash": "906a963c3e7959ac79d6d9d6143b2e44ac755b71"
+          }
+        },
+        {
+          "client_id": "690987320952-mancd7c8tfad7h6mfc1r85f3s79t7nsk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHcTluMZQafF5aMAcUSFxsQ7qlmLj3rRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "690987320952-mancd7c8tfad7h6mfc1r85f3s79t7nsk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
