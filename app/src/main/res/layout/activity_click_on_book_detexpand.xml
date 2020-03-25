@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ClickOnBookDetexpand">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/clickbooktoolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/md_pink_700"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:titleTextColor="@color/material_drawer_background">
+
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <ImageView
+        android:id="@+id/clickbkimg"
+        android:layout_width="149dp"
+        android:layout_height="232dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clickbooktoolbar"
+        app:srcCompat="@drawable/bkimage" />
+
+    <TextView
+        android:id="@+id/clickbkname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="12dp"
+        android:autoText="false"
+        android:fontFamily="@font/alegreya"
+        android:text="Book Name"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@+id/clickbkimg"
+        app:layout_constraintTop_toTopOf="@+id/clickbkimg" />
+
+    <TextView
+        android:id="@+id/clickbkauthor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Author: Olivia"
+        app:layout_constraintStart_toStartOf="@+id/clickbkname"
+        app:layout_constraintTop_toBottomOf="@+id/clickbkname" />
+
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="12dp"
+        android:layout_marginTop="32dp"
+        android:background="@color/grey"
+        app:layout_constraintTop_toBottomOf="@+id/clickbkimg"
+        tools:layout_editor_absoluteX="8dp">
+
+    </View>
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        app:layout_constraintEnd_toEndOf="@+id/view"
+        app:layout_constraintStart_toStartOf="@+id/clickbkimg"
+        app:layout_constraintTop_toBottomOf="@+id/view">
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:fontFamily="@font/alegreya"
+            android:text="Description"
+            android:textSize="21sp"
+            android:textStyle="bold" />
+
+        <com.borjabravo.readmoretextview.ReadMoreTextView
+            android:id="@+id/clickbkdesp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/alike"
+            android:text="One of the most inspiring and popular autobiographies to read is Late Abdul Kalam’s Wings of Fire. In this book, the former president shares his personal experiences and minutest details of his life. It narrates his life, right from the former late president’s rise from humble beginnings to his vision for the country in the year 2020. It has been divided into four parts equally. The first part narrates his early life that includes his parents, teachers and other influential role models." />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="409dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/md_pink_700"
+            android:onClick="clickfav"
+            android:text="Add Fav"
+            android:textAllCaps="true"
+            android:textColor="@color/common_google_signin_btn_text_dark_default" />
+
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/default_inactive_shape_color"
+            android:onClick="clickborrow"
+            android:text="Borrow" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/clickowner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Owner:"
+        app:layout_constraintStart_toStartOf="@+id/clickbkauthor"
+        app:layout_constraintTop_toBottomOf="@+id/clickbkauthor" />
+
+    <TextView
+        android:id="@+id/textView11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Current Owner Contact:"
+        app:layout_constraintStart_toStartOf="@+id/clickowner"
+        app:layout_constraintTop_toBottomOf="@+id/clickowner" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
